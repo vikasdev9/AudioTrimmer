@@ -1,0 +1,87 @@
+package com.example.audiotrimmer.domain.StateHandeling
+
+import com.example.audiotrimmer.data.DataClass.Song
+import com.example.audiotrimmer.data.DataClass.Video
+
+
+sealed class ResultState<out T>{
+    object Loading: ResultState<Nothing>()
+    data class Success<T>(val data: T): ResultState<T>()
+    data class Error(val message: String): ResultState<Nothing>()
+}
+
+data class AudioTrimmerState(
+    val isLoading: Boolean = false,
+    val data: String= "",
+    val error: String ? = null
+)
+
+data class VideoTrimmerState(
+    val isLoading: Boolean = false,
+    val data: String= "",
+    val error: String ? = null
+)
+
+data class AudioExtractorState(
+    val isLoading: Boolean = false,
+    val data: String= "",
+    val error: String ? = null
+)
+
+data class GetAllSongState(
+    val isLoading: Boolean = false,
+    val data: List<Song> = emptyList(),
+    val error: String ? = null
+)
+
+data class GetAllVideoState(
+    val isLoading: Boolean = false,
+    val data: List<Video> = emptyList(),
+    val error: String ? = null
+)
+
+data class GetAllSongsForMergeState(
+    val isLoading: Boolean = false,
+    val data: List<Song> = emptyList(),
+    val error: String ? = null
+)
+
+data class AudioMergeState(
+    val isLoading: Boolean = false,
+    val data: String= "",
+    val error: String ? = null
+)
+
+data class MultiCropAudioState(
+    val isLoading: Boolean = false,
+    val data: String= "",
+    val error: String ? = null
+)
+
+data class MultiCropVideoState(
+    val isLoading: Boolean = false,
+    val data: String= "",
+    val error: String ? = null
+)
+
+data class ConvertAudioFormatState(
+    val isLoading: Boolean = false,
+    val data: String= "",
+    val error: String ? = null
+)
+
+data class RecordAudioState(
+    val isLoading: Boolean = false,
+    val data: String = "",
+    val error: String? = null,
+    val isRecording: Boolean = false,
+    val isPaused: Boolean = false
+)
+
+data class AdState(
+    val isLoading: Boolean = false,
+    val isAdReady: Boolean = false,
+    val isAdShowing: Boolean = false,
+    val error: String? = null,
+    val adDismissed: Boolean = false
+)

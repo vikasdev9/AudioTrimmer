@@ -1,0 +1,13 @@
+package com.example.audiotrimmer.domain.UseCases
+
+import android.net.Uri
+import com.example.audiotrimmer.domain.Repository.GetAllSongRepository
+import com.example.audiotrimmer.domain.StateHandeling.ResultState
+import kotlinx.coroutines.flow.Flow
+import javax.inject.Inject
+
+class MergeSongsUseCase @Inject constructor(private val repository: GetAllSongRepository) {
+    suspend operator fun invoke(uriList: List<Uri>, filename: String): Flow<ResultState<String>> {
+        return repository.mergeSongs(uriList = uriList, filename = filename)
+    }
+}
