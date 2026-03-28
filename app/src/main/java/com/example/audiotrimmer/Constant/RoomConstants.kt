@@ -1,0 +1,7 @@
+package com.example.audiotrimmer.Constant
+
+object RoomConstants {
+    const val RECENT_TABLE_NAME = "recent_table"
+    const val CROP_SEGMENT_TABLE_NAME = "crop_segment_table"
+    const val APP_ROOM_DATA_BASE_NAME = "app_database"
+}

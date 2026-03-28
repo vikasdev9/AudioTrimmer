@@ -4,6 +4,7 @@ import android.app.Activity
 import android.util.Log
 
 import android.widget.Toast
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -34,12 +35,15 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.PlayerView
 import androidx.navigation.NavController
+import com.example.audiotrimmer.Constant.FileTypes
 import com.example.audiotrimmer.data.DataClass.CropSegment
+import com.example.audiotrimmer.data.room.entity.CropSegmentTable
 import com.example.audiotrimmer.presentation.Navigation.MULTICROPAUDIOERRORSTATE
 import com.example.audiotrimmer.presentation.Navigation.MULTICROPAUDIOSUCCESSSTATE
 import com.example.audiotrimmer.presentation.ViewModel.AdsViewModel
 import com.example.audiotrimmer.presentation.ViewModel.MediaPlayerViewModel
 import com.example.audiotrimmer.presentation.ViewModel.MultiCropViewModel
+import com.example.audiotrimmer.presentation.ViewModel.RecentViewModel
 import com.example.audiotrimmer.presentation.components.BannerAdView
 import java.util.Locale
 
@@ -99,6 +103,34 @@ fun MultiCropAudioScreen(
     // Initialize player
     LaunchedEffect(uri) {
         mediaPlayerViewModel.initializePlayer(uri.toUri())
+    }
+
+    // Load pre-existing segments if navigating from recent (filename will contain the segments)
+    // This is triggered by passing songName with pre-loaded segments from RecentScreen
+    LaunchedEffect(Unit) {
+        // If songName contains data and segments are empty, we might be loading from recent
+        // The RecentScreen will have already loaded the segments via getCropSegmentsByFileName
+        // and passed them through navigation context - we'll let RecentScreen handle this
+    }
+
+    // Save crop segments to database when multicrop completes
+    val recentViewModel: RecentViewModel = hiltViewModel()
+    LaunchedEffect(multiCropState.data) {
+        if (multiCropState.data.isNotBlank() && segments.isNotEmpty()) {
+            // Save each segment to the database with the same filename and MULTICROP_AUDIO type
+            segments.forEach { segment ->
+                val cropSegmentTable = CropSegmentTable(
+                    id = 0,
+                    start = segment.start?.toString() ?: "0",
+                    end = segment.end?.toString() ?: "0",
+                    fileName = filename.value.ifBlank { songName },
+                    featureType = "Audio Merge",
+                    fileType = FileTypes.MULTICROP_AUDIO,
+                    input_uri = uri
+                )
+                recentViewModel.upsertCropSegment(cropSegmentTable)
+            }
+        }
     }
 
     // Monitor player position and pause at segment end
@@ -221,6 +253,7 @@ fun MultiCropAudioScreen(
                 item {
                     Card(
                         modifier = Modifier.fillMaxWidth(0.9f),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
                         colors = CardDefaults.cardColors(
                             containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
                         ),
@@ -375,6 +408,7 @@ fun MultiCropAudioScreen(
                     item {
                         Card(
                             modifier = Modifier.fillMaxWidth(0.9f),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
                             colors = CardDefaults.cardColors(
                                 containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
                             ),
@@ -565,7 +599,7 @@ fun SegmentCard(
             .fillMaxWidth(0.9f)
             .border(
                 width = 1.dp,
-                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
+                color = MaterialTheme.colorScheme.primary,
                 shape = RoundedCornerShape(12.dp)
             ),
         colors = CardDefaults.cardColors(

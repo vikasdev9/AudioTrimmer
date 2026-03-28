@@ -45,11 +45,14 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.PlayerView
 import androidx.navigation.NavController
 import android.util.Log
+import com.example.audiotrimmer.Constant.FileTypes
+import com.example.audiotrimmer.data.room.entity.RecentTable
 import com.example.audiotrimmer.presentation.Navigation.AUDIOTRIMMERERRORSTATE
 import com.example.audiotrimmer.presentation.Navigation.AUDIOTRIMMERSUCCESSSTATE
 import com.example.audiotrimmer.presentation.ViewModel.AdsViewModel
 import com.example.audiotrimmer.presentation.ViewModel.AudioTrimViewModel
 import com.example.audiotrimmer.presentation.ViewModel.MediaPlayerViewModel
+import com.example.audiotrimmer.presentation.ViewModel.RecentViewModel
 import com.example.audiotrimmer.presentation.components.BannerAdView
 import java.util.Locale
 
@@ -62,9 +65,11 @@ fun AudioTrimmerScreen(
     navController: NavController,
     audioTrimViewModel: AudioTrimViewModel = hiltViewModel(),
     mediaPlayerViewModel: MediaPlayerViewModel = hiltViewModel(),
+    recentViewModel: RecentViewModel = hiltViewModel(),
     adsViewModel: AdsViewModel = hiltViewModel(),
     uri: String = "",
     songDuration: Long = 0,
+    songName: String = "",
 ) {
     val context = LocalContext.current
 
@@ -82,6 +87,7 @@ fun AudioTrimmerScreen(
     val endTime = endValue.value.toLong()
 
     val audioTrimState = audioTrimViewModel.audioTrimmerState.collectAsState()
+    val upsertRecentState = recentViewModel.upsertRecentEntryState.collectAsState()
 
     // Helper function to format time from seconds to MM:SS or HH:MM:SS
     fun formatTime(seconds: Long): String {
@@ -97,6 +103,27 @@ fun AudioTrimmerScreen(
 
     LaunchedEffect(uri) {
         mediaPlayerViewModel.initializePlayer(uri.toUri())
+    }
+
+    LaunchedEffect(audioTrimState.value.data) {
+        if (audioTrimState.value.data.isNotBlank()) {
+            recentViewModel.resetUpsertRecentEntryState()
+            recentViewModel.upsertRecentEntry(
+                recentTable = RecentTable(
+                    featureType = "Audio Trimmer",
+                    inputUri = uri,
+                    outputUri = audioTrimState.value.data,
+                    date_modified = System.currentTimeMillis().toString(),
+                    input_duration = songDuration.toString(),
+                    output_duration = (endTime - startTime).toString(),
+                    input_name = songName,
+                    output_name = filename.value.trim(),
+                    input_size = "",
+                    output_size = "",
+                    fileType = FileTypes.AUDIO_FILE
+                )
+            )
+        }
     }
 
 
@@ -143,6 +170,15 @@ fun AudioTrimmerScreen(
                     navController.navigate(AUDIOTRIMMERERRORSTATE)
                 }
                 audioTrimState.value.data.isNotBlank() && !adShown.value -> {
+                    if (upsertRecentState.value.isLoading ||
+                        (upsertRecentState.value.data.isBlank() && upsertRecentState.value.error == null)
+                    ) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.padding(24.dp)
+                        )
+                        return@Column
+                    }
+
                     // Successful trim; attempt to show interstitial ad once
                     adShown.value = true // prevent re-entry
                     val activity = context as? Activity
@@ -226,6 +262,8 @@ fun AudioTrimmerScreen(
                             val isRangeValid = startTime < endTime && endTime <= songDuration
 
                             if (isStartValid && isEndValid && isRangeValid && filename.value.isNotBlank()) {
+                                recentViewModel.resetUpsertRecentEntryState()
+
                                 // IMPORTANT: RangeSlider values already represent milliseconds; do NOT multiply by 1000
                                 audioTrimViewModel.audioTrimmerState(
                                     context = context,

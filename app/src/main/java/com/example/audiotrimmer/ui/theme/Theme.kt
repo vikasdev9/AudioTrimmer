@@ -1,53 +1,81 @@
 package com.example.audiotrimmer.ui.theme
 
-import android.app.Activity
-import android.os.Build
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
-import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.Color
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.audiotrimmer.presentation.ViewModel.RevenueCatViewmodel
+import com.example.audiotrimmer.presentation.ViewModel.UserPrefViewModel
+import com.example.audiotrimmer.Constant.Colors as AppColors
 
-private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+private val AppBlack = Color(0xFF000000)
+private val AppWhite = Color(0xFFFFFFFF)
+
+private fun appColorPalette(accent: Color) = darkColorScheme(
+    primary = accent,
+    onPrimary = AppBlack,
+    primaryContainer = AppBlack,
+    onPrimaryContainer = AppWhite,
+
+    secondary = accent,
+    onSecondary = AppBlack,
+    secondaryContainer = AppBlack,
+    onSecondaryContainer = AppWhite,
+
+    tertiary = accent,
+    onTertiary = AppBlack,
+    tertiaryContainer = AppBlack,
+    onTertiaryContainer = AppWhite,
+
+    background = AppBlack,
+    onBackground = AppWhite,
+    surface = AppBlack,
+    onSurface = AppWhite,
+    surfaceVariant = AppBlack,
+    onSurfaceVariant = AppWhite,
+
+    inverseSurface = AppBlack,
+    inverseOnSurface = AppWhite,
+    inversePrimary = accent,
+
+    error = Color(0xFFFF5252),
+    onError = AppBlack,
+    errorContainer = AppBlack,
+    onErrorContainer = Color(0xFFFF5252),
+
+    outline = accent,
+    outlineVariant = accent,
+    scrim = AppBlack
 )
 
-private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
+private val redColorPallete = appColorPalette(accent = Color(0xFFFF0B55))
+private val greenColorPallete = appColorPalette(accent = Color(0xFF8BC34A))
+private val blueColorPallete = appColorPalette(accent = Color(0xFF03A9F4))
+private val yellowColorPallete = appColorPalette(accent = Color(0xFFFFEB3B))
+private val purpleColorPallete = appColorPalette(accent = Color(0xFFDF77EE))
+private val pinkColorPallete = appColorPalette(accent = Color(0xFFF35389))
+private val orangeColorPallete = appColorPalette(accent = Color(0xFFF54E1B))
 
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
-)
 
 @Composable
 fun AudioCutterTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    themeViewModel: UserPrefViewModel = hiltViewModel(),
+    revenueCatViewmodel: RevenueCatViewmodel = hiltViewModel(),
     content: @Composable () -> Unit
 ) {
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
+    val selectedTheme = themeViewModel.themeSelection.collectAsStateWithLifecycle().value
 
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
+    val colorScheme = when (selectedTheme) {
+        AppColors.REDTHEME -> redColorPallete
+        AppColors.GREENTHEME -> greenColorPallete
+        AppColors.BLUETHEME -> blueColorPallete
+        AppColors.YELLOWTHEME -> yellowColorPallete
+        AppColors.PURPLETHEME -> purpleColorPallete
+        AppColors.PINKTHEME -> pinkColorPallete
+        AppColors.ORANGETHEME -> orangeColorPallete
+        else -> orangeColorPallete
     }
 
     MaterialTheme(

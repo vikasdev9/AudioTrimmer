@@ -12,6 +12,7 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.scaleIn
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -33,6 +34,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CardGiftcard
+import androidx.compose.material.icons.filled.ColorLens
 import androidx.compose.material.icons.filled.ContentCut
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Favorite
@@ -47,6 +49,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -73,6 +76,7 @@ import androidx.navigation.NavController
 import kotlinx.coroutines.delay
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.core.net.toUri
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.audiotrimmer.BuildConfig
 import com.example.audiotrimmer.presentation.Navigation.ALLAUDIOFORMERGESCREEN
 import com.example.audiotrimmer.presentation.Navigation.ALLSONGSFORCONVERTAUDIOFORMATSCREEN
@@ -81,7 +85,10 @@ import com.example.audiotrimmer.presentation.Navigation.ALLVIDEOFORAUDIOEXTRACTS
 import com.example.audiotrimmer.presentation.Navigation.ALLVIDEOSCREEN
 import com.example.audiotrimmer.presentation.Navigation.ALLVIDEOSFORMULTICROPSCREEN
 import com.example.audiotrimmer.presentation.Navigation.HOMESCREEN
+import com.example.audiotrimmer.presentation.Navigation.PROPACKAGESCREEN
+import com.example.audiotrimmer.presentation.Navigation.RECENTSCREEN
 import com.example.audiotrimmer.presentation.Navigation.RECORDAUDIOSCREEN
+import com.example.audiotrimmer.presentation.Navigation.THEMESELECTIONSCREEN
 import com.example.audiotrimmer.presentation.ViewModel.AdsViewModel
 import com.example.audiotrimmer.presentation.components.BannerAdView
 
@@ -102,6 +109,13 @@ fun SelectFeatureScreen(
 ) {
     val context = LocalContext.current
     var showFeedbackDialog by remember { mutableStateOf(false) }
+    val isUserProState by adsViewModel.isUserProState.collectAsStateWithLifecycle()
+
+    LaunchedEffect(showFeedbackDialog) {
+        if (showFeedbackDialog) {
+            adsViewModel.refreshIsUserProStatusForAds()
+        }
+    }
 
     val features = listOf(
         FeatureItem("Audio Trimmer", Icons.Default.ContentCut),
@@ -112,9 +126,12 @@ fun SelectFeatureScreen(
         FeatureItem("Multi Crop Video", Icons.Default.VideoLibrary),
         FeatureItem("Convert Audio", Icons.Default.SwapHoriz),
         FeatureItem("Record Audio", Icons.Default.Mic),
+        FeatureItem("Recent", Icons.Outlined.Schedule),
+        FeatureItem("Pro", Icons.Default.Favorite),
+        FeatureItem("Theme", Icons.Default.ColorLens),
         FeatureItem("FeedBack Ads", Icons.Default.CardGiftcard, isFeedbackAds = true),
-        FeatureItem("Feature Request", Icons.Default.Email, isFeatureRequest = true),
         FeatureItem("Privacy Policy", Icons.Default.PrivacyTip, isPrivacyPolicy = true),
+        FeatureItem("Feature Request", Icons.Default.Email, isFeatureRequest = true),
         FeatureItem("Coming Soon", Icons.Outlined.Schedule, isComingSoon = true)
     )
 
@@ -137,7 +154,7 @@ fun SelectFeatureScreen(
                     fontWeight = FontWeight.Bold,
                     fontSize = 28.sp
                 ),
-                color = MaterialTheme.colorScheme.onBackground,
+                color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(bottom = 24.dp)
             )
 
@@ -154,7 +171,6 @@ fun SelectFeatureScreen(
                         onClick = {
                             when{
                                 feature == features[0] -> {
-                                    // Audio Trimmer
                                     navController.navigate(HOMESCREEN)
                                 }
                                 feature == features[1] -> {
@@ -186,24 +202,34 @@ fun SelectFeatureScreen(
                                     navController.navigate(RECORDAUDIOSCREEN)
                                 }
                                 feature == features[8] -> {
+                                    // Recent
+                                    navController.navigate(RECENTSCREEN)
+                                }
+                                feature == features[9] -> {
+                                    navController.navigate(PROPACKAGESCREEN)
+                                }
+                                feature == features[10] -> {
+                                    navController.navigate(THEMESELECTIONSCREEN)
+                                }
+                                feature == features[11] -> {
                                     // FeedBack Ads
                                     showFeedbackDialog = true
                                 }
-                                feature == features[9] -> {
-                                    // Feature Request
-                                    val intent = Intent(Intent.ACTION_SENDTO).apply {
-                                        data = "mailto:${BuildConfig.FEEDBACK_EMAIL}".toUri()
-                                        putExtra(Intent.EXTRA_SUBJECT, "Feature Request")
-                                    }
-                                    context.startActivity(Intent.createChooser(intent, "Send Email"))
-                                }
-                                feature == features[10] -> {
+                                feature == features[12] -> {
                                     // Privacy Policy
                                     val intent = Intent(Intent.ACTION_VIEW).apply {
                                         data =
                                             "https://codexyze.github.io/audio_cutter.html".toUri()
                                     }
                                     context.startActivity(intent)
+                                }
+                                feature == features[13] -> {
+                                    // Feature Request
+                                    val intent = Intent(Intent.ACTION_SENDTO).apply {
+                                        data = "mailto:${BuildConfig.FEEDBACK_EMAIL}".toUri()
+                                        putExtra(Intent.EXTRA_SUBJECT, "Feature Request")
+                                    }
+                                    context.startActivity(Intent.createChooser(intent, "Send Email"))
                                 }
                             }
                         }
@@ -219,7 +245,7 @@ fun SelectFeatureScreen(
         )
     }
 
-    // FeedBack Ads Dialog - Warm & Appreciative Design
+    // FeedBack Ads Dialog - Pro aware behavior
     if (showFeedbackDialog) {
         Dialog(
             onDismissRequest = { showFeedbackDialog = false }
@@ -276,106 +302,121 @@ fun SelectFeatureScreen(
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 22.sp
                             ),
-                            color = MaterialTheme.colorScheme.onSurface,
+                            color = Color.White,
                             textAlign = TextAlign.Center
                         )
 
                         Spacer(modifier = Modifier.height(20.dp))
 
-                        // Message
-                        Text(
-                            text = "Watching a short ad helps support this independent app and keeps future updates coming.",
-                            style = MaterialTheme.typography.bodyLarge.copy(
-                                fontSize = 15.sp,
-                                lineHeight = 22.sp
-                            ),
-                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
-                            textAlign = TextAlign.Center
-                        )
-
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        Text(
-                            text = "No pressure at all — thanks for using the app!",
-                            style = MaterialTheme.typography.bodyMedium.copy(
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Medium
-                            ),
-                            color = Color(0xFFFF6B9D), // Soft pink
-                            textAlign = TextAlign.Center
-                        )
-
-                        Spacer(modifier = Modifier.height(28.dp))
-
-                        // Buttons Row
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            // Skip Button
-                            TextButton(
-                                onClick = { showFeedbackDialog = false },
-                                modifier = Modifier.weight(1f),
-                                shape = RoundedCornerShape(16.dp)
-                            ) {
-                                Text(
-                                    text = "Skip",
-                                    style = MaterialTheme.typography.labelLarge.copy(
-                                        fontWeight = FontWeight.SemiBold
-                                    ),
-                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                                )
+                        when {
+                            isUserProState.isLoading -> {
+                                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                             }
 
-                            // Sure Button with Heart
-                            var heartBounce by remember { mutableStateOf(false) }
-
-                            Button(
-                                onClick = {
-                                    heartBounce = true
-                                    showFeedbackDialog = false
-                                    val activity = context as? Activity
-                                    if (activity != null) {
-                                        adsViewModel.requestAndShowAd(
-                                            activity = activity,
-                                            onAdDismissed = {},
-                                            onAdFailed = {}
-                                        )
-                                    }
-                                },
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .scale(if (heartBounce) 1.1f else 1f),
-                                shape = RoundedCornerShape(16.dp),
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(0xFFFF6B9D) // Soft pink
+                            isUserProState.data -> {
+                                Text(
+                                    text = "you already did a lot by taking pro .",
+                                    style = MaterialTheme.typography.bodyLarge.copy(
+                                        fontSize = 15.sp,
+                                        lineHeight = 22.sp,
+                                        fontWeight = FontWeight.Medium
+                                    ),
+                                    color = Color.White,
+                                    textAlign = TextAlign.Center
                                 )
-                            ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.Center
+
+                                Spacer(modifier = Modifier.height(28.dp))
+
+                                TextButton(
+                                    onClick = { showFeedbackDialog = false },
+                                    shape = RoundedCornerShape(16.dp)
                                 ) {
                                     Text(
-                                        text = "Sure",
+                                        text = "Close",
                                         style = MaterialTheme.typography.labelLarge.copy(
-                                            fontWeight = FontWeight.Bold
+                                            fontWeight = FontWeight.SemiBold
                                         ),
-                                        color = Color.White
-                                    )
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    Icon(
-                                        imageVector = Icons.Default.Favorite,
-                                        contentDescription = "Heart",
-                                        modifier = Modifier.size(18.dp),
-                                        tint = Color.White
+                                        color = Color.White.copy(alpha = 0.85f)
                                     )
                                 }
                             }
 
-                            LaunchedEffect(heartBounce) {
-                                if (heartBounce) {
-                                    delay(150)
-                                    heartBounce = false
+                            else -> {
+                                Text(
+                                    text = if (isUserProState.error != null) {
+                                        "No internet. You can still support by watching an ad."
+                                    } else {
+                                        "Watching a short ad helps support this independent app and keeps future updates coming."
+                                    },
+                                    style = MaterialTheme.typography.bodyLarge.copy(
+                                        fontSize = 15.sp,
+                                        lineHeight = 22.sp
+                                    ),
+                                    color = Color.White.copy(alpha = 0.85f),
+                                    textAlign = TextAlign.Center
+                                )
+
+                                Spacer(modifier = Modifier.height(12.dp))
+
+                                Text(
+                                    text = "No pressure at all — thanks for using the app!",
+                                    style = MaterialTheme.typography.bodyMedium.copy(
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.Medium
+                                    ),
+                                    color = Color.White,
+                                    textAlign = TextAlign.Center
+                                )
+
+                                Spacer(modifier = Modifier.height(28.dp))
+
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                                ) {
+                                    Button(
+                                        onClick = {
+                                            showFeedbackDialog = false
+                                            val activity = context as? Activity
+                                            if (activity != null) {
+                                                adsViewModel.requestAndShowAd(
+                                                    activity = activity,
+                                                    onAdDismissed = {},
+                                                    onAdFailed = {}
+                                                )
+                                            }
+                                        },
+                                        modifier = Modifier.weight(1f),
+                                        shape = RoundedCornerShape(16.dp),
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = Color(0xFFFF6B9D)
+                                        )
+                                    ) {
+                                        Text(
+                                            text = "Watch Ads",
+                                            style = MaterialTheme.typography.labelLarge.copy(
+                                                fontWeight = FontWeight.Bold
+                                            ),
+                                            color = Color.White
+                                        )
+                                    }
+
+                                    TextButton(
+                                        onClick = {
+                                            showFeedbackDialog = false
+                                            navController.navigate(PROPACKAGESCREEN)
+                                        },
+                                        modifier = Modifier.weight(1f),
+                                        shape = RoundedCornerShape(16.dp)
+                                    ) {
+                                        Text(
+                                            text = "Buy Pro",
+                                            style = MaterialTheme.typography.labelLarge.copy(
+                                                fontWeight = FontWeight.SemiBold
+                                            ),
+                                            color = Color.White.copy(alpha = 0.9f)
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -397,6 +438,10 @@ fun FeatureCard(
             .aspectRatio(1f)
             .clickable(enabled = !feature.isComingSoon) { onClick() },
         shape = RoundedCornerShape(24.dp),
+        border = BorderStroke(
+            width = 1.dp,
+            color = MaterialTheme.colorScheme.primary
+        ),
         colors = CardDefaults.cardColors(
             containerColor = if (feature.isComingSoon)
                 MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
@@ -449,10 +494,7 @@ fun FeatureCard(
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 15.sp
                     ),
-                    color = if (feature.isComingSoon)
-                        MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f)
-                    else
-                        MaterialTheme.colorScheme.onSurface,
+                    color = if (feature.isComingSoon) Color.White.copy(alpha = 0.65f) else Color.White,
                     textAlign = TextAlign.Center,
                     maxLines = 2
                 )
@@ -464,7 +506,7 @@ fun FeatureCard(
                         style = MaterialTheme.typography.bodySmall.copy(
                             fontWeight = FontWeight.Medium
                         ),
-                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
+                        color = Color.White,
                         fontSize = 12.sp
                     )
                 }
