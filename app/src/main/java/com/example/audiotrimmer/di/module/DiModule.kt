@@ -1,4 +1,4 @@
-package com.example.audiotrimmer.di
+package com.example.audiotrimmer.di.module
 
 import android.content.Context
 import androidx.media3.common.util.UnstableApi
@@ -42,7 +42,7 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object DiModule {
     @Provides
-    fun provideExoplayer(@ApplicationContext context: Context): ExoPlayer{
+    fun provideExoplayer(@ApplicationContext context: Context): ExoPlayer {
         return ExoPlayer.Builder(context).build()
 
     }
@@ -68,7 +68,7 @@ object DiModule {
 
     @Provides
     fun provideMediaPlayerManager(exoPlayer: ExoPlayer): MediaPlayerManager {
-        return MediaPlayerManager(exoPlayer =exoPlayer )
+        return MediaPlayerManager(exoPlayer = exoPlayer)
     }
 
     @UnstableApi
@@ -79,12 +79,12 @@ object DiModule {
 
     @Provides
     fun provideGetAllVideoUseCase(videoRepository: VideoRepository): GetAllVideoUseCase {
-        return GetAllVideoUseCase(repository =videoRepository )
+        return GetAllVideoUseCase(repository = videoRepository)
     }
 
     @Provides
     fun provideTrimVideoUseCase(videoRepository: VideoRepository): TrimVideoUseCase {
-        return TrimVideoUseCase(repository =videoRepository )
+        return TrimVideoUseCase(repository = videoRepository)
     }
 
     @Provides

@@ -17,6 +17,7 @@ import com.example.audiotrimmer.presentation.Screens.AudioMergeSuccessScreen
 import com.example.audiotrimmer.presentation.Screens.AudioTrimErrorScreen
 import com.example.audiotrimmer.presentation.Screens.AudioTrimSuccessScreen
 import com.example.audiotrimmer.presentation.Screens.AudioTrimmerScreen
+import com.example.audiotrimmer.presentation.Screens.BuyProPackageScreen
 import com.example.audiotrimmer.presentation.Screens.ConvertAudioFormatErrorScreen
 import com.example.audiotrimmer.presentation.Screens.ConvertAudioFormatScreen
 import com.example.audiotrimmer.presentation.Screens.ConvertAudioFormatSuccessScreen
@@ -32,10 +33,15 @@ import com.example.audiotrimmer.presentation.Screens.MultiCropAudioSuccessScreen
 import com.example.audiotrimmer.presentation.Screens.MultiCropVideoErrorScreen
 import com.example.audiotrimmer.presentation.Screens.MultiCropVideoScreen
 import com.example.audiotrimmer.presentation.Screens.MultiCropVideoSuccessScreen
+import com.example.audiotrimmer.presentation.Screens.ProPackageScreen
+import com.example.audiotrimmer.presentation.Screens.RecentAudioPlayerScreen
+import com.example.audiotrimmer.presentation.Screens.RecentScreen
+import com.example.audiotrimmer.presentation.Screens.RecentVideoPlayerScreen
 import com.example.audiotrimmer.presentation.Screens.RecordAudioErrorScreen
 import com.example.audiotrimmer.presentation.Screens.RecordAudioScreen
 import com.example.audiotrimmer.presentation.Screens.RecordAudioSuccessScreen
 import com.example.audiotrimmer.presentation.Screens.SelectFeatureScreen
+import com.example.audiotrimmer.presentation.Screens.ThemeSelectionScreen
 import com.example.audiotrimmer.presentation.Screens.VideoTrimErrorScreen
 import com.example.audiotrimmer.presentation.Screens.VideoTrimSuccessScreen
 import com.example.audiotrimmer.presentation.Screens.VideoTrimmerScreen
@@ -50,6 +56,44 @@ fun MainApp() {
         composable <SELECTFEATURESCREEN>{
             SelectFeatureScreen(navController = navcontroller)
         }
+        composable<RECENTSCREEN> {
+            RecentScreen(navController = navcontroller)
+        }
+        composable<PROPACKAGESCREEN> {
+            ProPackageScreen(navController = navcontroller)
+        }
+        composable<THEMESELECTIONSCREEN> {
+            ThemeSelectionScreen(navController = navcontroller)
+        }
+        composable<BUYPROPACKAGESCREEN> { backstackEntry ->
+            val data: BUYPROPACKAGESCREEN = backstackEntry.toRoute()
+            BuyProPackageScreen(
+                packageIdentifier = data.packageIdentifier,
+                productId = data.productId,
+                title = data.title,
+                description = data.description,
+                priceFormatted = data.priceFormatted,
+                packageType = data.packageType
+            )
+        }
+        composable<RECENTAUDIOPLAYERSCREEN> { backstackEntry ->
+            val data: RECENTAUDIOPLAYERSCREEN = backstackEntry.toRoute()
+            RecentAudioPlayerScreen(
+                navController = navcontroller,
+                outputUri = data.outputUri,
+                outputName = data.outputName,
+                inputName = data.inputName
+            )
+        }
+        composable<RECENTVIDEOPLAYERSCREEN> { backstackEntry ->
+            val data: RECENTVIDEOPLAYERSCREEN = backstackEntry.toRoute()
+            RecentVideoPlayerScreen(
+                navController = navcontroller,
+                outputUri = data.outputUri,
+                outputName = data.outputName,
+                inputName = data.inputName
+            )
+        }
         composable<HOMESCREEN> {
             AllAudioScreen(navController = navcontroller)
 
@@ -63,7 +107,8 @@ fun MainApp() {
             AudioTrimmerScreen(
                 navController = navcontroller,
                 uri = data.uri,
-                songDuration = data.songDuration
+                songDuration = data.songDuration,
+                songName = data.songName
             )
         }
         composable<VIDEOTRIMMERSCREEN> { backstackEntry ->
@@ -71,7 +116,8 @@ fun MainApp() {
             VideoTrimmerScreen(
                 navController = navcontroller,
                 uri = data.uri,
-                videoDuration = data.videoDuration
+                videoDuration = data.videoDuration,
+                videoName = data.videoName
             )
         }
         composable<AUDIOTRIMMERSUCCESSSTATE> {
@@ -97,7 +143,8 @@ fun MainApp() {
             AudioExtractorScreen(
                 navController = navcontroller,
                 uri = data.uri,
-                videoDuration = data.videoDuration
+                videoDuration = data.videoDuration,
+                videoName = data.videoName
             )
         }
         composable<AUDIOEXTRACTORSUCCESSSTATE> {

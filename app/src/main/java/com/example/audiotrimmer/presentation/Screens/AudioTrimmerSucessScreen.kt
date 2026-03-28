@@ -25,6 +25,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.audiotrimmer.presentation.Navigation.HOMESCREEN
+import com.example.audiotrimmer.presentation.Navigation.SELECTFEATURESCREEN
 import com.example.audiotrimmer.presentation.components.BannerAdView
 
 
@@ -74,7 +75,7 @@ fun AudioTrimSuccessScreen(
 
             Button(
                 onClick = {
-                    navController.navigate(HOMESCREEN) {
+                    navController.navigate(SELECTFEATURESCREEN) {
                         popUpTo(0) { inclusive = true } // 🔙 Clears back stack
                     }
                 },

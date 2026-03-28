@@ -25,6 +25,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.audiotrimmer.presentation.Navigation.ALLVIDEOSCREEN
+import com.example.audiotrimmer.presentation.Navigation.SELECTFEATURESCREEN
 import com.example.audiotrimmer.presentation.components.BannerAdView
 
 
@@ -74,7 +75,7 @@ fun VideoTrimSuccessScreen(
 
             Button(
                 onClick = {
-                    navController.navigate(ALLVIDEOSCREEN) {
+                    navController.navigate(SELECTFEATURESCREEN) {
                         popUpTo(0) { inclusive = true } // 🔙 Clears back stack
                     }
                 },
@@ -84,7 +85,7 @@ fun VideoTrimSuccessScreen(
                     .height(50.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
             ) {
-                Text("Go to Videos", style = MaterialTheme.typography.titleMedium)
+                Text("Go Home", style = MaterialTheme.typography.titleMedium)
             }
         }
 

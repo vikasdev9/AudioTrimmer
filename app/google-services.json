@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "84702691541",
+    "project_id": "audiovideocuttarapp",
+    "storage_bucket": "audiovideocuttarapp.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:84702691541:android:e60d1af0bc83a470ebe25c",
+        "android_client_info": {
+          "package_name": "com.example.audiotrimmer"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAppRUU6wWMYw1i-6JhLNQlADqPXIxqYE0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

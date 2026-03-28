@@ -26,12 +26,18 @@ import androidx.media3.common.MimeTypes
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.PlayerView
 import androidx.navigation.NavController
+import com.example.audiotrimmer.Constant.FileTypes
+import com.example.audiotrimmer.data.room.entity.RecentTable
 import com.example.audiotrimmer.presentation.Navigation.CONVERTAUDIOFORMATERRORSTATE
 import com.example.audiotrimmer.presentation.Navigation.CONVERTAUDIOFORMATSUCCESSSTATE
 import com.example.audiotrimmer.presentation.ViewModel.AdsViewModel
 import com.example.audiotrimmer.presentation.ViewModel.ConvertAudioFormatViewModel
 import com.example.audiotrimmer.presentation.ViewModel.MediaPlayerViewModel
+import com.example.audiotrimmer.presentation.ViewModel.RecentViewModel
 import com.example.audiotrimmer.presentation.components.BannerAdView
+import java.io.File
+import androidx.compose.foundation.BorderStroke
+
 
 // Data class representing an output audio format supported by Transformer
 data class AudioFormatOption(
@@ -48,6 +54,7 @@ fun ConvertAudioFormatScreen(
     navController: NavController,
     convertAudioFormatViewModel: ConvertAudioFormatViewModel = hiltViewModel(),
     mediaPlayerViewModel: MediaPlayerViewModel = hiltViewModel(),
+    recentViewModel: RecentViewModel = hiltViewModel(),
     adsViewModel: AdsViewModel = hiltViewModel(),
     uri: String = "",
     songDuration: Long = 0,
@@ -72,10 +79,45 @@ fun ConvertAudioFormatScreen(
     val adShown = rememberSaveable { mutableStateOf(false) }
 
     val convertState by convertAudioFormatViewModel.convertAudioFormatState.collectAsState()
+    val upsertRecentState = recentViewModel.upsertRecentEntryState.collectAsState()
 
     // Initialize player
     LaunchedEffect(uri) {
         mediaPlayerViewModel.initializePlayer(uri.toUri())
+    }
+
+    // Save conversion to recent table when operation completes
+    LaunchedEffect(convertState.data) {
+        if (convertState.data.isNotBlank()) {
+            recentViewModel.resetUpsertRecentEntryState()
+
+            // Get output file size
+            val outputSize = runCatching {
+                val outputUri = convertState.data.toUri()
+                if (outputUri.scheme == "content") {
+                    context.contentResolver.openAssetFileDescriptor(outputUri, "r")?.use { it.length.toString() } ?: ""
+                } else {
+                    val path = outputUri.path ?: convertState.data
+                    File(path).length().toString()
+                }
+            }.getOrDefault("")
+
+            recentViewModel.upsertRecentEntry(
+                recentTable = RecentTable(
+                    featureType = "Audio Converter",
+                    inputUri = uri,
+                    outputUri = convertState.data,
+                    date_modified = System.currentTimeMillis().toString(),
+                    input_duration = songDuration.toString(),
+                    output_duration = songDuration.toString(),  // Same duration as input
+                    input_name = songName,
+                    output_name = filename.value.trim(),
+                    input_size = "",
+                    output_size = outputSize,
+                    fileType = FileTypes.AUDIO_FILE
+                )
+            )
+        }
     }
 
     // Cleanup on dispose
@@ -123,12 +165,21 @@ fun ConvertAudioFormatScreen(
                     navController.navigate(CONVERTAUDIOFORMATERRORSTATE)
                 }
                 convertState.data.isNotBlank() && !adShown.value -> {
-                    adShown.value = true
+                    // Wait for recent entry to be saved
+                    if (upsertRecentState.value.isLoading ||
+                        (upsertRecentState.value.data.isBlank() && upsertRecentState.value.error == null)
+                    ) {
+                        return@Column
+                    }
+
+                    // Successful conversion; attempt to show interstitial ad once
+                    adShown.value = true // prevent re-entry
                     val activity = context as? Activity
                     if (activity == null) {
-                        Log.w("ConvertAudioFormatScreen", "Context is not an Activity")
+                        Log.w("ConvertAudioFormatScreen", "Context is not an Activity; navigating without ad")
                         navController.navigate(CONVERTAUDIOFORMATSUCCESSSTATE)
                     } else {
+                        // Unified ad request (show if ready, otherwise load then show) and always navigate after
                         adsViewModel.requestAndShowAd(
                             activity = activity,
                             onAdDismissed = { navController.navigate(CONVERTAUDIOFORMATSUCCESSSTATE) },
@@ -176,6 +227,7 @@ fun ConvertAudioFormatScreen(
                 item {
                     Card(
                         modifier = Modifier.fillMaxWidth(0.9f),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
                         colors = CardDefaults.cardColors(
                             containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
                         ),
@@ -209,7 +261,7 @@ fun ConvertAudioFormatScreen(
                                         ExposedDropdownMenuDefaults.TrailingIcon(expanded = dropdownExpanded)
                                     },
                                     modifier = Modifier
-                                        .menuAnchor()
+                                        .menuAnchor(MenuAnchorType.PrimaryNotEditable)
                                         .fillMaxWidth(),
                                     colors = OutlinedTextFieldDefaults.colors(
                                         focusedBorderColor = MaterialTheme.colorScheme.primary,
@@ -263,6 +315,7 @@ fun ConvertAudioFormatScreen(
                 item {
                     Card(
                         modifier = Modifier.fillMaxWidth(0.9f),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
                         colors = CardDefaults.cardColors(
                             containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
                         ),

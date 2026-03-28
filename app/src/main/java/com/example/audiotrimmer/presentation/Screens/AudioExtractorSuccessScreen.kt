@@ -25,6 +25,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.audiotrimmer.presentation.Navigation.HOMESCREEN
+import com.example.audiotrimmer.presentation.Navigation.SELECTFEATURESCREEN
 import com.example.audiotrimmer.presentation.components.BannerAdView
 
 @Composable
@@ -73,7 +74,7 @@ fun AudioExtractorSuccessScreen(
 
             Button(
                 onClick = {
-                    navController.navigate(HOMESCREEN) {
+                    navController.navigate(SELECTFEATURESCREEN) {
                         popUpTo(0) { inclusive = true }
                     }
                 },
@@ -84,7 +85,7 @@ fun AudioExtractorSuccessScreen(
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
             ) {
                 Text(
-                    text = "View All Audio",
+                    text = "Go Home",
                     style = MaterialTheme.typography.titleMedium
                 )
             }

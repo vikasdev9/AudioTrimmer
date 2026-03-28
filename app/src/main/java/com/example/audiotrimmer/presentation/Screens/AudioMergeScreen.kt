@@ -2,6 +2,7 @@ package com.example.audiotrimmer.presentation.Screens
 
 import android.app.Activity
 import android.widget.Toast
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -46,10 +47,13 @@ import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.audiotrimmer.Constant.FileTypes
+import com.example.audiotrimmer.data.room.entity.RecentTable
 import com.example.audiotrimmer.presentation.Navigation.AUDIOMERGEERRORSTATE
 import com.example.audiotrimmer.presentation.Navigation.AUDIOMERGESUCCESSSTATE
 import com.example.audiotrimmer.presentation.ViewModel.AdsViewModel
 import com.example.audiotrimmer.presentation.ViewModel.AudioMergeViewModel
+import com.example.audiotrimmer.presentation.ViewModel.RecentViewModel
 import com.example.audiotrimmer.presentation.components.BannerAdView
 
 
@@ -57,6 +61,7 @@ import com.example.audiotrimmer.presentation.components.BannerAdView
 fun AudioMergeScreen(
     navController: NavController,
     audioMergeViewModel: AudioMergeViewModel = hiltViewModel(),
+    recentViewModel: RecentViewModel = hiltViewModel(),
     adsViewModel: AdsViewModel = hiltViewModel(),
     uriList: List<String>,
     songNames: List<String>
@@ -67,12 +72,51 @@ fun AudioMergeScreen(
     val adShown = rememberSaveable { mutableStateOf(false) }
 
     val audioMergeState = audioMergeViewModel.audioMergeState.collectAsState()
+    val upsertRecentState = recentViewModel.upsertRecentEntryState.collectAsState()
 
+    // Handle successful merge - upsert recent entry with all details like audio trimmer
+    LaunchedEffect(audioMergeState.value.data) {
+        if (audioMergeState.value.data.isNotBlank()) {
+            recentViewModel.resetUpsertRecentEntryState()
+            recentViewModel.upsertRecentEntry(
+                recentTable = RecentTable(
+                    featureType = "Audio Merge",
+                    inputUri = uriList.joinToString(","),
+                    outputUri = audioMergeState.value.data,
+                    date_modified = System.currentTimeMillis().toString(),
+                    input_duration = "",
+                    output_duration = "",
+                    input_name = songNames.joinToString(", "),
+                    output_name = filename.value.trim(),
+                    input_size = "",
+                    output_size = "",
+                    fileType = FileTypes.AUDIO_FILE
+                )
+            )
+        }
+    }
+
+    // Handle navigation with ad display like audio trimmer
     LaunchedEffect(audioMergeState.value) {
         if (audioMergeState.value.isLoading.not() && audioMergeState.value.data.isNotEmpty() && !adShown.value) {
-            adShown.value = true
+            // Wait for recent entry to be saved
+            if (upsertRecentState.value.isLoading ||
+                (upsertRecentState.value.data.isBlank() && upsertRecentState.value.error == null)
+            ) {
+                return@LaunchedEffect
+            }
+
+            // Successful merge; attempt to show interstitial ad once
+            adShown.value = true // prevent re-entry
             val activity = context as? Activity
-            if (activity != null) {
+            if (activity == null) {
+                navController.navigate(AUDIOMERGESUCCESSSTATE) {
+                    popUpTo(navController.graph.id) {
+                        inclusive = false
+                    }
+                }
+            } else {
+                // Unified ad request (show if ready, otherwise load then show) and always navigate after
                 adsViewModel.requestAndShowAd(
                     activity = activity,
                     onAdDismissed = {
@@ -125,6 +169,7 @@ fun AudioMergeScreen(
             item {
                 Card(
                     shape = RoundedCornerShape(16.dp),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f)
                     ),
@@ -217,6 +262,7 @@ fun AudioMergeScreen(
                 Button(
                     onClick = {
                         if (filename.value.isNotEmpty()) {
+                            recentViewModel.resetUpsertRecentEntryState()
                             val uris = uriList.map { it.toUri() }
                             audioMergeViewModel.mergeSongs(
                                 uriList = uris,
@@ -258,6 +304,7 @@ fun AudioMergeScreen(
                 item {
                     Card(
                         shape = RoundedCornerShape(16.dp),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
                         colors = CardDefaults.cardColors(
                             containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.3f)
                         ),

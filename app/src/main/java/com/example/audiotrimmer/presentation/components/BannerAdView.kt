@@ -21,9 +21,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.audiotrimmer.BuildConfig
 import com.example.audiotrimmer.presentation.ViewModel.AdsViewModel
 import com.example.audiotrimmer.presentation.ViewModel.BannerAdState
+import com.example.audiotrimmer.presentation.ViewModel.RevenueCatViewmodel
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
 
@@ -33,10 +35,12 @@ private const val TAG = "BannerAdView"
 @Composable
 fun BannerAdView(
     modifier: Modifier = Modifier,
-    adsViewModel: AdsViewModel = hiltViewModel()
+    adsViewModel: AdsViewModel = hiltViewModel(),
+    revenueCatViewmodel: RevenueCatViewmodel = hiltViewModel()
 ) {
     val context = LocalContext.current
-    val bannerAdState: BannerAdState by adsViewModel.bannerAdState.collectAsState()
+    val bannerAdState: BannerAdState by adsViewModel.bannerAdState.collectAsStateWithLifecycle()
+    val isUserProState by revenueCatViewmodel.isUserProState.collectAsStateWithLifecycle()
 
     val adView = remember {
         AdView(context).apply {
@@ -47,13 +51,41 @@ fun BannerAdView(
     }
 
     LaunchedEffect(Unit) {
-        Log.d(TAG, "Loading banner ad...")
-        adsViewModel.loadBannerAd(adView)
+        revenueCatViewmodel.checkIsUserPro()
     }
 
-    // Only show the banner when it's successfully loaded
+    LaunchedEffect(
+        isUserProState.isLoading,
+        isUserProState.error,
+        isUserProState.data
+    ) {
+        when {
+            isUserProState.isLoading -> {
+                Log.d(TAG, "Banner gate state: Loading user pro status")
+            }
+
+            isUserProState.error != null -> {
+                Log.e(TAG, "Banner gate state: Failed user pro check - ${isUserProState.error}")
+            }
+
+            isUserProState.data -> {
+                Log.d(TAG, "Banner gate state: User is Pro, banner ad hidden")
+            }
+
+            else -> {
+                Log.d(TAG, "Banner gate state: User is not Pro, loading banner ad")
+                adsViewModel.loadBannerAd(adView)
+            }
+        }
+    }
+
+    val canShowBanner = !isUserProState.isLoading &&
+            isUserProState.error == null &&
+            !isUserProState.data
+
+    // Only show the banner when user is non-pro and ad is loaded
     AnimatedVisibility(
-        visible = bannerAdState is BannerAdState.Loaded,
+        visible = canShowBanner && bannerAdState is BannerAdState.Loaded,
         enter = fadeIn() + slideInVertically(initialOffsetY = { it }),
         exit = fadeOut() + slideOutVertically(targetOffsetY = { it }),
         modifier = modifier
