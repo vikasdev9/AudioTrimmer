@@ -3,6 +3,8 @@ package com.example.audiotrimmer.presentation.Navigation
 import kotlinx.serialization.Serializable
 
 @Serializable
+object SPLASHSCREEN
+@Serializable
 object HOMESCREEN
 
 @Serializable

@@ -33,7 +33,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         // Install splash screen before calling super.onCreate()
 
-        installSplashScreen()
+//        installSplashScreen()
 
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
