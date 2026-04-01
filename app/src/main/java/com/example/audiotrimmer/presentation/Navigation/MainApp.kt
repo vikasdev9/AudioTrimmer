@@ -41,6 +41,7 @@ import com.example.audiotrimmer.presentation.Screens.RecordAudioErrorScreen
 import com.example.audiotrimmer.presentation.Screens.RecordAudioScreen
 import com.example.audiotrimmer.presentation.Screens.RecordAudioSuccessScreen
 import com.example.audiotrimmer.presentation.Screens.SelectFeatureScreen
+import com.example.audiotrimmer.presentation.Screens.SplashScreen
 import com.example.audiotrimmer.presentation.Screens.ThemeSelectionScreen
 import com.example.audiotrimmer.presentation.Screens.VideoTrimErrorScreen
 import com.example.audiotrimmer.presentation.Screens.VideoTrimSuccessScreen
@@ -51,7 +52,11 @@ import com.example.audiotrimmer.presentation.Screens.VideoTrimmerScreen
 @Composable
 fun MainApp() {
     val navcontroller = rememberNavController()
-    NavHost(navController = navcontroller, startDestination = SELECTFEATURESCREEN) {
+    NavHost(navController = navcontroller, startDestination = SPLASHSCREEN) {
+
+        composable <SPLASHSCREEN>{
+            SplashScreen(navController = navcontroller)
+        }
 
         composable <SELECTFEATURESCREEN>{
             SelectFeatureScreen(navController = navcontroller)
