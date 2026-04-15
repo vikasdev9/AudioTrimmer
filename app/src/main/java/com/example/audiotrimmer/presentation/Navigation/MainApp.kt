@@ -25,6 +25,7 @@ import com.example.audiotrimmer.presentation.Screens.GetAllAudioForMergeScreen
 import com.example.audiotrimmer.presentation.Screens.GetAllSongsForConvertAudioFormatScreen
 import com.example.audiotrimmer.presentation.Screens.GetAllSongsForMultiCropScreen
 import com.example.audiotrimmer.presentation.Screens.GetAllVideoForAudioExtractScreen
+import com.example.audiotrimmer.presentation.Screens.GetAllVideoForSpeedScreen
 import com.example.audiotrimmer.presentation.Screens.GetAllVideoScreen
 import com.example.audiotrimmer.presentation.Screens.GetAllVideosForMultiCropScreen
 import com.example.audiotrimmer.presentation.Screens.MultiCropAudioErrorScreen
@@ -43,6 +44,9 @@ import com.example.audiotrimmer.presentation.Screens.RecordAudioSuccessScreen
 import com.example.audiotrimmer.presentation.Screens.SelectFeatureScreen
 import com.example.audiotrimmer.presentation.Screens.SplashScreen
 import com.example.audiotrimmer.presentation.Screens.ThemeSelectionScreen
+import com.example.audiotrimmer.presentation.Screens.VideoSpeedErrorScreen
+import com.example.audiotrimmer.presentation.Screens.VideoSpeedScreen
+import com.example.audiotrimmer.presentation.Screens.VideoSpeedSuccessScreen
 import com.example.audiotrimmer.presentation.Screens.VideoTrimErrorScreen
 import com.example.audiotrimmer.presentation.Screens.VideoTrimSuccessScreen
 import com.example.audiotrimmer.presentation.Screens.VideoTrimmerScreen
@@ -52,11 +56,7 @@ import com.example.audiotrimmer.presentation.Screens.VideoTrimmerScreen
 @Composable
 fun MainApp() {
     val navcontroller = rememberNavController()
-    NavHost(navController = navcontroller, startDestination = SPLASHSCREEN) {
-
-        composable <SPLASHSCREEN>{
-            SplashScreen(navController = navcontroller)
-        }
+    NavHost(navController = navcontroller, startDestination = SELECTFEATURESCREEN) {
 
         composable <SELECTFEATURESCREEN>{
             SelectFeatureScreen(navController = navcontroller)
@@ -255,6 +255,28 @@ fun MainApp() {
 
         composable<RECORDAUDIOERRORSTATE> {
             RecordAudioErrorScreen(navController = navcontroller)
+        }
+
+        composable<ALLVIDEOSFORSPEEDSCREEN> {
+            GetAllVideoForSpeedScreen(navController = navcontroller)
+        }
+
+        composable<VIDEOSPEEDSCREEN> { backstackEntry ->
+            val data: VIDEOSPEEDSCREEN = backstackEntry.toRoute()
+            VideoSpeedScreen(
+                navController = navcontroller,
+                uri = data.uri,
+                videoDuration = data.videoDuration,
+                videoName = data.videoName
+            )
+        }
+
+        composable<VIDEOSPEEDSUCCESSSTATE> {
+            VideoSpeedSuccessScreen(navController = navcontroller)
+        }
+
+        composable<VIDEOSPEEDERRORSTATE> {
+            VideoSpeedErrorScreen(navController = navcontroller)
         }
 
     }

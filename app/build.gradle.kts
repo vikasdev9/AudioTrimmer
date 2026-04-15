@@ -23,6 +23,9 @@ val feedBackAds: String = project.findProperty("FEEDBACK_EMAIL") as? String ?:"y
 //test banner ad id
 val bannerAdsID: String = project.findProperty("BANNER_ADS_ID")as? String ?:"ca-app-pub-3940256099942544/6300978111"
 
+//revenue cat Test api key
+//val revenueCatApiKey: String = project.findProperty("REVENUE_CAT_API_KEY") as String?:"replace-with-api-key"
+
 
 android {
     namespace = "com.example.audiotrimmer"
@@ -76,9 +79,9 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
     implementation(libs.play.services.ads.api)
-//    implementation(libs.firebase.messaging.ktx)
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.messaging)
+    implementation(libs.androidx.material3)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

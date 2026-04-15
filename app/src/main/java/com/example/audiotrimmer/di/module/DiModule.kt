@@ -12,6 +12,7 @@ import com.example.audiotrimmer.data.RepoImpl.MultiCropAudioRepoImpl
 import com.example.audiotrimmer.data.RepoImpl.MultiCropVideoRepoImpl
 import com.example.audiotrimmer.data.RepoImpl.RecordAudioRepoImpl
 import com.example.audiotrimmer.data.RepoImpl.VideoRepImpl
+import com.example.audiotrimmer.data.RepoImpl.VideoSpeedRepoImpl
 import com.example.audiotrimmer.domain.Repository.AdsRepository
 import com.example.audiotrimmer.domain.Repository.AudioTrimmerRepository
 import com.example.audiotrimmer.domain.Repository.ConvertAudioFormatRepository
@@ -20,6 +21,8 @@ import com.example.audiotrimmer.domain.Repository.MultiCropAudioRepository
 import com.example.audiotrimmer.domain.Repository.MultiCropVideoRepository
 import com.example.audiotrimmer.domain.Repository.RecordAudioRepository
 import com.example.audiotrimmer.domain.Repository.VideoRepository
+import com.example.audiotrimmer.domain.Repository.VideoSpeedRepository
+import com.example.audiotrimmer.domain.UseCases.ChangeVideoSpeedUseCase
 import com.example.audiotrimmer.domain.UseCases.ConvertAudioFormatUseCase
 import com.example.audiotrimmer.domain.UseCases.GetAllSongsForMergeUseCase
 import com.example.audiotrimmer.domain.UseCases.GetAllVideoUseCase
@@ -75,6 +78,17 @@ object DiModule {
     @Provides
     fun provideVideoRepo(@ApplicationContext context: Context): VideoRepository {
         return VideoRepImpl(context = context)
+    }
+
+    @UnstableApi
+    @Provides
+    fun provideVideoSpeedRepo(@ApplicationContext context: Context): VideoSpeedRepository {
+        return VideoSpeedRepoImpl(context = context)
+    }
+
+    @Provides
+    fun provideChangeVideoSpeedUseCase(repository: VideoSpeedRepository): ChangeVideoSpeedUseCase {
+        return ChangeVideoSpeedUseCase(repository = repository)
     }
 
     @Provides
