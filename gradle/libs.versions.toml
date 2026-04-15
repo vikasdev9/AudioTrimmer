@@ -23,6 +23,7 @@ constraintlayoutCompose = "1.1.1"
 playServicesAdsApi = "25.0.0"
 googleServices = "4.4.4"
 firebaseMessagingKtx = "25.0.1"
+material3 = "1.4.0"
 
 
 [libraries]
@@ -66,6 +67,7 @@ androidx-navigation-compose = { module = "androidx.navigation:navigation-compose
 androidx-constraintlayout-compose = { group = "androidx.constraintlayout", name = "constraintlayout-compose", version.ref = "constraintlayoutCompose" }
 play-services-ads-api = { group = "com.google.android.gms", name = "play-services-ads-api", version.ref = "playServicesAdsApi" }
 firebase-messaging = { module = "com.google.firebase:firebase-messaging" }
+androidx-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
